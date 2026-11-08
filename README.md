@@ -3,7 +3,7 @@
 Sistema web de gestión de agenda y citas desarrollado con **Django 6.0** y **MariaDB 10.4 (XAMPP)**.
 
 ## 👨‍💻 Autor y Desarrollor
-* **Autor:** Landi Pérez
+* **Autor:** Landis Sanchez
 
 ## 🚀 Tecnologías y Entorno
 * **Python 3.12+**
