@@ -1,0 +1,337 @@
+{% extends 'control/base.html' %}
+
+{% block title %}Citas{% endblock %}
+{% block page_title %}Citas{% endblock %}
+{% block page_subtitle %}Programación de reuniones virtuales y presenciales{% endblock %}
+
+{% block content %}
+
+<div class="page-grid">
+
+    <!-- REGISTRAR O EDITAR CITA -->
+    <section class="tarjeta form-card">
+
+        <div class="card-head">
+            <div>
+                <h2>
+                    {% if editar %}
+                        Editar cita
+                    {% else %}
+                        Agendar cita
+                    {% endif %}
+                </h2>
+                <p>
+                    {% if editar %}
+                        Actualiza la información de la reunión.
+                    {% else %}
+                        Programa una nueva reunión con un cliente.
+                    {% endif %}
+                </p>
+            </div>
+            {% if editar %}
+                <span class="badge badge-edicion">Editando</span>
+            {% endif %}
+        </div>
+
+        <form method="post" action="{% url 'guardar_cita' %}">
+
+            {% csrf_token %}
+
+            {% if editar %}
+                <input type="hidden"
+                       name="id_cita"
+                       value="{{ editar.id_cita }}">
+            {% endif %}
+
+            <div class="form-grid">
+
+                <!-- CLIENTE -->
+                <div class="campo full">
+                    <label for="id_cliente">Seleccionar cliente</label>
+
+                    <select name="id_cliente" id="id_cliente" required>
+
+                        <option value="">Seleccione un cliente</option>
+
+                        {% for cliente in clientes %}
+
+                            <option value="{{ cliente.id_cliente }}"
+                                {% if editar.cliente_id == cliente.id_cliente %}
+                                    selected
+                                {% endif %}>
+
+                                {{ cliente.nombre }} {{ cliente.apellido }}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <!-- FECHA Y HORA -->
+                <div class="campo full">
+                    <label for="id_fecha_hora">Fecha y hora</label>
+
+                    <input type="datetime-local"
+                           id="id_fecha_hora"
+                           name="fecha_hora"
+                           value="{% if editar %}{{ editar.fecha_hora|date:'Y-m-d' }}T{{ editar.fecha_hora|date:'H:i' }}{% endif %}"
+                           required>
+                </div>
+
+                <!-- MOTIVO -->
+                <div class="campo full">
+                    <label for="id_motivo">Motivo de la cita</label>
+
+                    <input type="text"
+                           id="id_motivo"
+                           name="motivo"
+                           maxlength="200"
+                           value="{{ editar.motivo|default:'' }}"
+                           required>
+                </div>
+
+                <!-- TIPO DE REUNIÓN -->
+                <div class="campo full">
+                    <label for="id_tipo_reunion">Tipo de reunión</label>
+
+                    <select name="tipo_reunion"
+                            id="id_tipo_reunion"
+                            required>
+
+                        <option value="">Seleccione</option>
+
+                        <option value="Virtual"
+                            {% if editar.tipo_reunion == 'Virtual' %}
+                                selected
+                            {% endif %}>
+                            Virtual
+                        </option>
+
+                        <option value="Presencial"
+                            {% if editar.tipo_reunion == 'Presencial' %}
+                                selected
+                            {% endif %}>
+                            Presencial
+                        </option>
+
+                    </select>
+                </div>
+
+                <!-- DIRECCIÓN -->
+                <div class="campo full campo-condicional" data-campo="presencial">
+                    <label for="id_direccion">Dirección</label>
+
+                    <input type="text"
+                           id="id_direccion"
+                           name="direccion"
+                           maxlength="200"
+                           value="{{ editar.direccion|default:'' }}">
+                </div>
+
+                <!-- REFERENCIA -->
+                <div class="campo full campo-condicional" data-campo="presencial">
+                    <label for="id_referencia">Referencia</label>
+
+                    <input type="text"
+                           id="id_referencia"
+                           name="referencia"
+                           maxlength="200"
+                           value="{{ editar.referencia|default:'' }}">
+                </div>
+
+                <!-- ENLACE VIRTUAL -->
+                <div class="campo full campo-condicional" data-campo="virtual">
+                    <label for="id_enlace_virtual">Enlace de reunión virtual</label>
+
+                    <input type="url"
+                           id="id_enlace_virtual"
+                           name="enlace_virtual"
+                           value="{{ editar.enlace_virtual|default:'' }}"
+                           placeholder="https://meet.google.com/...">
+                </div>
+
+            </div>
+
+            <div class="botones">
+
+                <button type="submit" class="guardar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12.5 9.5 17 19 7.5"></path>
+                    </svg>
+                    {% if editar %}
+                        Actualizar
+                    {% else %}
+                        Guardar cita
+                    {% endif %}
+                </button>
+
+                <a href="{% url 'citas' %}" class="boton limpiar">
+                    Limpiar
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- LISTA DE CITAS -->
+    <section class="tarjeta">
+
+        <div class="card-head">
+            <div>
+                <h2>Lista de citas</h2>
+                <p>{{ citas|length }} registro{{ citas|length|pluralize:"s" }} encontrado{{ citas|length|pluralize:"s" }}.</p>
+            </div>
+        </div>
+
+        <form method="get" class="buscar">
+
+            <div class="buscar-campo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="6.5"></circle>
+                    <path d="m16 16 4.5 4.5"></path>
+                </svg>
+                <input type="search"
+                       name="buscar"
+                       value="{{ buscar }}"
+                       placeholder="Buscar cliente o motivo">
+            </div>
+
+            <button type="submit" class="buscar-btn">
+                Buscar
+            </button>
+
+            <a href="{% url 'citas' %}" class="boton limpiar">
+                Ver todas
+            </a>
+
+        </form>
+
+        <div class="tabla-contenedor">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Fecha y hora</th>
+                        <th>Motivo</th>
+                        <th>Tipo</th>
+                        <th>Ubicación / Enlace</th>
+                        <th>Referencia</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for cita in citas %}
+
+                    <tr>
+
+                        <td class="muted mono">#{{ cita.id_cita }}</td>
+
+                        <td>
+                            <span class="persona">
+                                <span class="persona-avatar">{{ cita.cliente.nombre|first|upper }}{{ cita.cliente.apellido|first|upper }}</span>
+                                <span class="persona-texto">
+                                    <strong>{{ cita.cliente }}</strong>
+                                    <small>DNI {{ cita.cliente.dni }}</small>
+                                </span>
+                            </span>
+                        </td>
+
+                        <td class="nowrap">
+                            <span class="fecha-chip">{{ cita.fecha_hora|date:"d/m/Y" }}</span>
+                            <span class="muted">{{ cita.fecha_hora|date:"H:i" }}</span>
+                        </td>
+
+                        <td>{{ cita.motivo }}</td>
+
+                        <td>
+                            {% if cita.tipo_reunion == 'Virtual' %}
+                                <span class="badge tipo-virtual">Virtual</span>
+                            {% else %}
+                                <span class="badge tipo-presencial">Presencial</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if cita.tipo_reunion == 'Virtual' %}
+
+                                {% if cita.enlace_virtual %}
+                                    <a href="{{ cita.enlace_virtual }}"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                        Abrir reunión
+                                    </a>
+                                {% else %}
+                                    <span class="muted">Sin enlace</span>
+                                {% endif %}
+
+                            {% else %}
+
+                                {{ cita.direccion|default:"Sin dirección" }}
+
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ cita.referencia|default:"-" }}
+                        </td>
+
+                        <td>
+                            <div class="acciones">
+
+                                <!-- EDITAR -->
+                                <a href="{% url 'citas' %}?editar={{ cita.id_cita }}"
+                                   class="boton editar">
+                                    Editar
+                                </a>
+
+                                <!-- ELIMINAR -->
+                                <form method="post"
+                                      class="form-eliminar"
+                                      action="{% url 'eliminar_cita' cita.id_cita %}">
+
+                                    {% csrf_token %}
+
+                                    <button type="submit" class="eliminar">
+                                        Eliminar
+                                    </button>
+
+                                </form>
+
+                            </div>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state compact">
+                                <p>No hay citas registradas.</p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

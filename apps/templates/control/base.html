@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}Panel{% endblock %} · Agenda Profesional</title>
+
+    <meta name="description" content="Agenda Profesional: gestión de clientes y citas.">
+
+    <link rel="stylesheet" href="{% static 'control/css/style.css' %}">
+    <script src="{% static 'control/js/app.js' %}" defer></script>
+</head>
+
+<body class="{% if user.is_authenticated %}app{% else %}auth{% endif %}">
+
+{% if user.is_authenticated %}
+
+    <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
+
+        <a class="brand" href="{% url 'inicio' %}">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="16" rx="2.5"></rect>
+                    <path d="M8 3v4M16 3v4M3 10h18"></path>
+                    <path d="M8 14h2M14 14h2M8 17.5h2"></path>
+                </svg>
+            </span>
+            <span class="brand-text">
+                <strong>Agenda</strong>
+                <small>Profesional</small>
+            </span>
+        </a>
+
+        <nav class="side-nav">
+
+            <span class="nav-label">Menú</span>
+
+            <a href="{% url 'inicio' %}" class="nav-link {% if request.resolver_match.url_name == 'inicio' %}active{% endif %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 10.5 12 3l9 7.5"></path>
+                    <path d="M5 9.5V21h14V9.5"></path>
+                    <path d="M9.5 21v-6h5v6"></path>
+                </svg>
+                <span>Inicio</span>
+            </a>
+
+            <a href="{% url 'clientes' %}" class="nav-link {% if request.resolver_match.url_name == 'clientes' %}active{% endif %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="9" cy="8" r="3.2"></circle>
+                    <path d="M2.5 20c0-3.3 2.9-6 6.5-6s6.5 2.7 6.5 6"></path>
+                    <path d="M16 4.5a3 3 0 0 1 0 6"></path>
+                    <path d="M18 14.2c2.1.8 3.5 2.8 3.5 5.3"></path>
+                </svg>
+                <span>Clientes</span>
+            </a>
+
+            <a href="{% url 'citas' %}" class="nav-link {% if request.resolver_match.url_name == 'citas' %}active{% endif %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect x="3" y="5" width="18" height="16" rx="2.5"></rect>
+                    <path d="M8 3v4M16 3v4M3 10h18"></path>
+                    <path d="M12 13.5v3l2 1.2"></path>
+                </svg>
+                <span>Citas</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <div class="user-card">
+                <span class="avatar">{{ user.username|first|upper }}</span>
+                <span class="user-info">
+                    <strong>{{ user.get_full_name|default:user.username }}</strong>
+                    <small>Administrador</small>
+                </span>
+            </div>
+
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"></path>
+                        <path d="m10 17 5-5-5-5"></path>
+                        <path d="M15 12H3"></path>
+                    </svg>
+                    <span>Cerrar sesión</span>
+                </button>
+            </form>
+
+        </div>
+
+    </aside>
+
+    <div class="sidebar-overlay" data-close-nav></div>
+
+    <div class="app-main">
+
+        <header class="topbar">
+
+            <button type="button" class="menu-toggle" data-toggle-nav aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <path d="M4 7h16M4 12h16M4 17h16"></path>
+                </svg>
+            </button>
+
+            <div class="topbar-title">
+                <h1>{% block page_title %}Panel{% endblock %}</h1>
+                <p>{% block page_subtitle %}Resumen de tu agenda{% endblock %}</p>
+            </div>
+
+            <div class="topbar-actions">
+                <span class="date-chip">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2.5"></rect>
+                        <path d="M8 3v4M16 3v4M3 10h18"></path>
+                    </svg>
+                    {% now "d/m/Y" %}
+                </span>
+                <a href="{% url 'citas' %}" class="boton guardar topbar-cta">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14"></path>
+                    </svg>
+                    Nueva cita
+                </a>
+            </div>
+
+        </header>
+
+        <main class="content">
+
+            {% if messages %}
+                <div class="avisos">
+                    {% for mensaje in messages %}
+                        <div class="aviso {{ mensaje.tags }}" role="status">
+                            <span class="aviso-icon" aria-hidden="true">
+                                {% if 'error' in mensaje.tags %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16.5v.01"></path></svg>
+                                {% else %}
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"></path></svg>
+                                {% endif %}
+                            </span>
+                            <span>{{ mensaje }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}
+            {% endblock %}
+
+        </main>
+
+        <footer class="app-footer">
+            <span>© 2026 Agenda Profesional · Proyecto educativo</span>
+            <span>Django + MariaDB</span>
+        </footer>
+
+    </div>
+
+{% else %}
+
+    <main class="auth-main">
+
+        {% if messages %}
+            <div class="avisos">
+                {% for mensaje in messages %}
+                    <div class="aviso {{ mensaje.tags }}" role="status">{{ mensaje }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block auth_content %}
+        {% endblock %}
+
+    </main>
+
+{% endif %}
+
+</body>
+</html>

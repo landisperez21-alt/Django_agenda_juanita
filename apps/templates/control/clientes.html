@@ -1,0 +1,271 @@
+{% extends 'control/base.html' %}
+
+{% block title %}Clientes{% endblock %}
+{% block page_title %}Clientes{% endblock %}
+{% block page_subtitle %}Registro y administración de clientes{% endblock %}
+
+{% block content %}
+
+<div class="page-grid">
+
+    <!-- REGISTRAR O EDITAR CLIENTE -->
+    <section class="tarjeta form-card">
+
+        <div class="card-head">
+            <div>
+                <h2>
+                    {% if editar %}
+                        Editar cliente
+                    {% else %}
+                        Registrar cliente
+                    {% endif %}
+                </h2>
+                <p>
+                    {% if editar %}
+                        Actualiza los datos del cliente seleccionado.
+                    {% else %}
+                        Completa los datos para dar de alta un cliente.
+                    {% endif %}
+                </p>
+            </div>
+            {% if editar %}
+                <span class="badge badge-edicion">Editando</span>
+            {% endif %}
+        </div>
+
+        <form method="post" action="{% url 'guardar_cliente' %}">
+
+            {% csrf_token %}
+
+            {% if editar %}
+                <input type="hidden"
+                       name="id_cliente"
+                       value="{{ editar.id_cliente }}">
+            {% endif %}
+
+            <div class="form-grid">
+
+                <div class="campo">
+                    <label for="id_nombre">Nombre</label>
+                    <input type="text"
+                           id="id_nombre"
+                           name="nombre"
+                           maxlength="100"
+                           value="{{ editar.nombre|default:'' }}"
+                           required>
+                </div>
+
+                <div class="campo">
+                    <label for="id_apellido">Apellido</label>
+                    <input type="text"
+                           id="id_apellido"
+                           name="apellido"
+                           maxlength="100"
+                           value="{{ editar.apellido|default:'' }}"
+                           required>
+                </div>
+
+                <div class="campo full">
+                    <label for="id_correo">Correo</label>
+                    <input type="email"
+                           id="id_correo"
+                           name="correo"
+                           value="{{ editar.correo|default:'' }}"
+                           required>
+                </div>
+
+                <div class="campo">
+                    <label for="id_telefono">Teléfono</label>
+                    <input type="tel"
+                           id="id_telefono"
+                           name="telefono"
+                           maxlength="15"
+                           value="{{ editar.telefono|default:'' }}"
+                           required>
+                </div>
+
+                <div class="campo">
+                    <label for="id_dni">DNI</label>
+                    <input type="text"
+                           id="id_dni"
+                           name="dni"
+                           maxlength="8"
+                           minlength="8"
+                           pattern="[0-9]{8}"
+                           value="{{ editar.dni|default:'' }}"
+                           required>
+                </div>
+
+                <div class="campo">
+                    <label for="id_edad">Edad</label>
+                    <input type="number"
+                           id="id_edad"
+                           name="edad"
+                           min="0"
+                           max="150"
+                           value="{{ editar.edad|default:'' }}"
+                           required>
+                </div>
+
+                <div class="campo">
+                    <label for="id_peso">Peso (kg)</label>
+                    <input type="number"
+                           id="id_peso"
+                           name="peso"
+                           min="0.01"
+                           max="999.99"
+                           step="0.01"
+                           value="{{ editar.peso|default:'' }}"
+                           required>
+                </div>
+
+            </div>
+
+            <div class="botones">
+
+                <button type="submit" class="guardar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M5 12.5 9.5 17 19 7.5"></path>
+                    </svg>
+                    {% if editar %}
+                        Actualizar
+                    {% else %}
+                        Guardar
+                    {% endif %}
+                </button>
+
+                <a href="{% url 'clientes' %}" class="boton limpiar">
+                    Limpiar
+                </a>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- LISTA DE CLIENTES -->
+    <section class="tarjeta">
+
+        <div class="card-head">
+            <div>
+                <h2>Lista de clientes</h2>
+                <p>{{ clientes|length }} registro{{ clientes|length|pluralize:"s" }} encontrado{{ clientes|length|pluralize:"s" }}.</p>
+            </div>
+        </div>
+
+        <form method="get" class="buscar">
+
+            <div class="buscar-campo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="6.5"></circle>
+                    <path d="m16 16 4.5 4.5"></path>
+                </svg>
+                <input type="search"
+                       name="buscar"
+                       value="{{ buscar }}"
+                       placeholder="Buscar por nombre, apellido o DNI">
+            </div>
+
+            <button type="submit" class="buscar-btn">
+                Buscar
+            </button>
+
+            <a href="{% url 'clientes' %}" class="boton limpiar">
+                Ver todos
+            </a>
+
+        </form>
+
+        <div class="tabla-contenedor">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>DNI</th>
+                        <th>Edad</th>
+                        <th>Peso</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for cliente in clientes %}
+
+                    <tr>
+
+                        <td class="muted mono">#{{ cliente.id_cliente }}</td>
+
+                        <td>
+                            <span class="persona">
+                                <span class="persona-avatar">{{ cliente.nombre|first|upper }}{{ cliente.apellido|first|upper }}</span>
+                                <span class="persona-texto">
+                                    <strong>{{ cliente.nombre }} {{ cliente.apellido }}</strong>
+                                    <small>Cliente registrado</small>
+                                </span>
+                            </span>
+                        </td>
+
+                        <td>{{ cliente.correo }}</td>
+                        <td class="nowrap mono">{{ cliente.telefono }}</td>
+                        <td class="mono">{{ cliente.dni }}</td>
+                        <td class="nowrap">{{ cliente.edad }} años</td>
+                        <td class="nowrap">{{ cliente.peso }} kg</td>
+
+                        <td>
+                            <div class="acciones">
+
+                                <!-- EDITAR -->
+                                <a href="{% url 'clientes' %}?editar={{ cliente.id_cliente }}"
+                                   class="boton editar">
+                                    Editar
+                                </a>
+
+                                <!-- ELIMINAR -->
+                                <form method="post"
+                                      class="form-eliminar"
+                                      action="{% url 'eliminar_cliente' cliente.id_cliente %}">
+
+                                    {% csrf_token %}
+
+                                    <button type="submit" class="eliminar">
+                                        Eliminar
+                                    </button>
+
+                                </form>
+
+                            </div>
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state compact">
+                                <p>No hay clientes registrados.</p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}
